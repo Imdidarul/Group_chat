@@ -1,0 +1,48 @@
+const express = require("express")
+const app = express()
+require('dotenv').config()
+const db = require("./utils/dbConnection")
+const cors = require("cors")
+// const helemt = require("helmet")
+// const morgan = require("morgan")
+const fs = require("fs")
+const path = require("path")
+const userRoute = require("./routes/userRoute")
+
+
+// const logStream = fs.createWriteStream(
+//     path.join(__dirname,'tmp/access.log'),
+//     {flags: 'a'}
+// );
+
+
+
+app.use(cors())
+app.use(express.json())
+// app.use(helemt())
+// app.use(morgan('combined', {stream: logStream}))
+
+app.get("/", (req, res) => {
+    res.send("Backend is running 🚀");
+  });
+app.use("/user",userRoute)
+
+
+app.use((err, req, res, next) => {
+    console.error("GLOBAL ERROR:", err.message);
+    console.error(err.stack);
+
+    res.status(500).json({
+        message: "Something went wrong",
+        error: err.message
+    });
+});
+
+
+db.sync().then(()=>{
+    app.listen(process.env.PORT || 3000,"0.0.0.0",(err)=>{
+        console.log("Server is running")
+    })
+}).catch((err)=>{
+    console.log("Unable to connect to server")
+})
