@@ -24,13 +24,14 @@ const validate = async (req,res)=>{
             return res.status(404).json({message:"Error:404 User not found"})
         
         }
+        id = user.id
 
         bcrypt.compare(password, user.password, (err,result)=>{
             if (err){
                 return res.status(400).json("Something went wrong")
             }
             if (result){
-                return res.status(200).json({message:"User logged in succesfully", token: generateToken(user.id), premium: (user.premium)})
+                return res.status(200).json({message:"User logged in succesfully", id: id})
             }else{
                 return res.status(401).json({message:"Password is incorrect"})
             }

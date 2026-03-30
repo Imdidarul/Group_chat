@@ -200,13 +200,16 @@
 
     <!-- Input -->
     <div class="chat-input">
-      <input type="text" placeholder="Type a message...">
-      <button>➤</button>
+      <input type="text" placeholder="Type a message..." id="message">
+      <button type="submit" onsubmit="handleMessageSubmit(event)">➤</button>
     </div>
 
   </div>
 
 </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="chat.js"></script>
 
 </body>
 </html>

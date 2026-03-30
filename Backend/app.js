@@ -8,6 +8,7 @@ const cors = require("cors")
 const fs = require("fs")
 const path = require("path")
 const userRoute = require("./routes/userRoute")
+const messageRoute = require("./routes/messageRoute")
 
 
 // const logStream = fs.createWriteStream(
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
     res.send("Backend is running 🚀");
   });
 app.use("/user",userRoute)
+app.use("/message",messageRoute)
 
 
 app.use((err, req, res, next) => {
