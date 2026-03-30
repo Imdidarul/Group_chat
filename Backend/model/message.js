@@ -16,10 +16,9 @@ const messages = sequelize.define(
         messageContent:{
             type: DataTypes.STRING,
             allowNull:false,
-            unique:true
         }
         }
 )
 
 
-module.exports = users
+module.exports = messages

@@ -41,8 +41,8 @@ app.use((err, req, res, next) => {
 });
 
 
-db.sync().then(()=>{
-    app.listen(process.env.PORT || 3000,"0.0.0.0",(err)=>{
+db.sync({alter: true}).then(()=>{
+    app.listen(process.env.PORT || 3000,(err)=>{
         console.log("Server is running")
     })
 }).catch((err)=>{
