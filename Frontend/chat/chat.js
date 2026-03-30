@@ -26,3 +26,40 @@ function handleMessageSubmit(event){
     })
 
 }
+
+
+async function loadMessages() {
+    try {
+        const res = await axios.get("http://localhost:3000/message/getMessages");
+
+        const chatBox = document.querySelector(".chat-box");
+        chatBox.innerHTML = "";
+        const currentUserId = localStorage.getItem("userId")
+
+        res.data.messages.forEach(msg => {
+            const div = document.createElement("div");
+
+            div.classList.add("msg");
+            if (msg.userId === currentUserId){
+                div.classList.add("right");    
+            }else{div.classList.add("left")}
+
+            div.innerHTML = `
+                <p>${msg.userId}</p>
+                <p>${msg.messageContent}</p>
+                <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
+            `;
+
+            chatBox.appendChild(div);
+        });
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+
+window.addEventListener("DOMContentLoaded",()=>{
+    loadMessages(),
+    setInterval(loadMessages, 5000)
+})

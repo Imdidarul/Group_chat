@@ -15,4 +15,16 @@ const addMessage = async(req,res)=>{
     }
 }
 
-module.exports = {addMessage}
+const getMessages = async(req,res)=>{
+    try {
+        const messages = await Message.findAll({
+            order:[['createdAt', 'ASC']]
+        })
+        res.status(200).send({messages:messages})
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+}
+
+
+module.exports = {addMessage,getMessages}
