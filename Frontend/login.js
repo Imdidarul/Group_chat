@@ -20,7 +20,7 @@ function handleFormSubmit(event){
         localStorage.setItem("userId",result.data.id)
         // localStorage.setItem('premium', result.data.premium)
         console.log(result.data.token)
-        window.location.href = "./index.html"
+        window.location.href = "./chat/chat.html"
 
     }).catch((error)=>{
         if(error.response){
