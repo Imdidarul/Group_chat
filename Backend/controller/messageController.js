@@ -1,13 +1,33 @@
 const User = require("../model/user")
 const Message = require("../model/message")
+let broadcast
+
+const setBroadcast = (fn)=>{
+    broadcast = fn
+}
 
 const addMessage = async(req,res)=>{
     try {
         const {userId, messageContent} = req.body
-        await Message.create({
-            userId:userId,
-            messageContent: messageContent
+
+        const newMsg = await Message.create({
+            userId,
+            messageContent
         })
+
+        if (broadcast){
+            broadcast({
+                id:newMsg.id,
+                userId: newMsg.userId,
+                messageContent: newMsg.messageContent,
+                createdAt: newMsg.createdAt
+            })
+        }
+        // broadcast(newMsg)
+        // await Message.create({
+        //     userId:userId,
+        //     messageContent: messageContent
+        // })
 
         res.status(200).json("Message sent")
     } catch (error) {
@@ -27,4 +47,4 @@ const getMessages = async(req,res)=>{
 }
 
 
-module.exports = {addMessage,getMessages}
+module.exports = {addMessage,getMessages, setBroadcast}

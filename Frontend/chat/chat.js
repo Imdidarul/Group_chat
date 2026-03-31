@@ -1,4 +1,28 @@
+const socket = new WebSocket("ws://localhost:3000")
 const api_url = "http://localhost:3000/message"
+
+socket.onmessage = function(event){
+    const msg = JSON.parse(event.data)
+    
+    const chatBox = document.querySelector(".chat-box")
+    const div = document.createElement("div")
+
+    const currentUserId = localStorage.getItem("userId")
+
+    div.classList.add("msg");
+        if (msg.userId === currentUserId){
+            div.classList.add("right");    
+        }else{div.classList.add("left")}
+
+    div.innerHTML = `
+        <p>${msg.userId}</p>
+        <p>${msg.messageContent}</p>
+        <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
+        `;
+
+    chatBox.appendChild(div);
+    
+}
 
 function handleMessageSubmit(event){
     event.preventDefault()
@@ -16,7 +40,7 @@ function handleMessageSubmit(event){
     .then((res)=>{
         // console.log("Message saved.")
         // event.target.reset()
-        messageContent.value = ""
+        document.getElementById("message").value = ""
     })
     .catch((err)=>{
         console.log(err.message)
@@ -60,6 +84,5 @@ async function loadMessages() {
 
 
 window.addEventListener("DOMContentLoaded",()=>{
-    loadMessages(),
-    setInterval(loadMessages, 5000)
+    loadMessages()
 })

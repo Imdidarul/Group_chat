@@ -3,13 +3,15 @@ const app = express()
 require('dotenv').config()
 const db = require("./utils/dbConnection")
 const cors = require("cors")
-// const helemt = require("helmet")
-// const morgan = require("morgan")
+const http = require("http")
+const WebSocket = require("ws")
 const fs = require("fs")
 const path = require("path")
 const userRoute = require("./routes/userRoute")
 const messageRoute = require("./routes/messageRoute")
-
+const messageController = require("./controller/messageController")
+const server = http.createServer(app)
+const wss = new WebSocket.Server({server})
 
 // const logStream = fs.createWriteStream(
 //     path.join(__dirname,'tmp/access.log'),
@@ -41,8 +43,33 @@ app.use((err, req, res, next) => {
 });
 
 
+let clients = []
+
+wss.on("connection", (ws)=>{
+    console.log("New client connected")
+
+    clients.push(ws)
+
+    ws.on("close", ()=>{
+        console.log("Client disconnected")
+        clients = clients.filter(client=> client!== ws)
+    })
+})
+
+const broadcastMessage = (data)=>{
+    clients.forEach(client=>{
+        if (client.readyState == WebSocket.OPEN){
+            client.send(JSON.stringify(data))
+        }
+    })
+}
+
+
+messageController.setBroadcast(broadcastMessage)
+
+
 db.sync({alter: true}).then(()=>{
-    app.listen(process.env.PORT || 3000,(err)=>{
+    server.listen(process.env.PORT || 3000,(err)=>{
         console.log("Server is running")
     })
 }).catch((err)=>{
