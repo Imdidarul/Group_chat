@@ -1,5 +1,5 @@
 // const {User, ForgotPasswordRequests} = require("../model/user")
-const User = require("../model/user")
+const {User} = require("../model")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const {v4:uuidv4} = require("uuid")

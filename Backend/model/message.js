@@ -1,6 +1,8 @@
 const {Sequelize,DataTypes} = require('sequelize');
 const sequelize = require("../utils/dbConnection")
 
+
+
 const messages = sequelize.define(
     'messages',{
         id:{
@@ -10,7 +12,7 @@ const messages = sequelize.define(
             allowNull: false
         },
         userId:{
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull:false
         },
         messageContent:{
