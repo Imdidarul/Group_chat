@@ -1,6 +1,10 @@
 // const socket = new WebSocket("ws://localhost:3000")
 // const {io} = require("socket.io-client")
-const socket = io("http://localhost:3000")
+const socket = io("http://localhost:3000",{
+    auth: {
+        token: localStorage.getItem("token")
+    }
+})
 const api_url = "http://localhost:3000/message"
 
 
@@ -69,25 +73,27 @@ function handleMessageSubmit(event){
     userId = localStorage.getItem("userId")
     // console.log(userId)
     // alert(userId)
-    messageContent = document.getElementById("message").value
+    messageValue = document.getElementById("message").value
 
-    const messageDetails = {
-        userId: userId,
-        messageContent: messageContent
+    const messageContent = {
+        messageContent: messageValue
     }
 
-    axios.post(`${api_url}/addMessage`,messageDetails)
-    .then((res)=>{
-        // console.log("Message saved.")
-        // event.target.reset()
-        document.getElementById("message").value = ""
-    })
-    .catch((err)=>{
-        console.log(err.message)
-        // message.textContent = err.response?.data || "Something went wrong"
-        message.classList.add("error")
-        // alert(err.response?.data || "something went wrong")
-    })
+
+    socket.emit("sendMessage",messageContent)
+    document.getElementById("message").value = ""
+    // axios.post(`${api_url}/addMessage`,messageDetails)
+    // .then((res)=>{
+    //     // console.log("Message saved.")
+    //     // event.target.reset()
+    //     document.getElementById("message").value = ""
+    // })
+    // .catch((err)=>{
+    //     console.log(err.message)
+    //     // message.textContent = err.response?.data || "Something went wrong"
+    //     message.classList.add("error")
+    //     // alert(err.response?.data || "something went wrong")
+    // })
 
 }
 

@@ -2,43 +2,66 @@
 // const Message = require("../model/message")
 
 const {User, Message} = require("../model")
-let broadcast
+let ioInstance
 
-const setBroadcast = (fn)=>{
-    broadcast = fn
+const initSocket = (io)=>{
+    ioInstance = io
 }
 
-const addMessage = async(req,res)=>{
+const addMessage = async(socket, data)=>{
     try {
-        const {userId, messageContent} = req.body
+        // const {userId, messageContent} = req.body
+        const userId = socket.user.id
+        const messageContent = data.messageContent
 
-        const user = await User.findByPk(userId)
+        // const user = await User.findByPk(userId)
 
         const newMsg = await Message.create({
             userId,
             messageContent
         })
 
-        if (broadcast){
-            broadcast({
+        const messageData = {
                 id:newMsg.id,
-                userId: newMsg.userId,
-                userName: user.name,
+                userId: socket.user.id,
+                userName: socket.user.name,
                 messageContent: newMsg.messageContent,
                 createdAt: newMsg.createdAt
-            })
         }
+
+        ioInstance.emit("Message",messageData)
         // broadcast(newMsg)
         // await Message.create({
         //     userId:userId,
         //     messageContent: messageContent
         // })
-
-        res.status(200).json("Message sent")
     } catch (error) {
-        res.status(500).send(error.message)
+        console.log(error)
+        // res.status(500).send(error.message)
     }
 }
+
+
+// socket.on("sendMessage", async (messageContent)=>{
+//     try {
+//         const newMsg = await Message.create({
+//             userId: socket.user.id,
+//             messageContent
+//         })
+
+//         const data = {
+//             id: newMsg.id,
+//             userId: socket.user.id,
+//             userName: socket.user.name,
+//             messageContent: newMsg.messageContent,
+//             createdAt: newMsg.createdAt
+//         };
+
+//         io.emit("Message", data);
+//     } catch (error) {
+        
+//     }
+// })
 
 const getMessages = async(req,res)=>{
     try {
@@ -58,4 +81,4 @@ const getMessages = async(req,res)=>{
 }
 
 
-module.exports = {addMessage,getMessages, setBroadcast}
+module.exports = {addMessage, getMessages,initSocket}

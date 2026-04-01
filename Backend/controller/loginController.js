@@ -6,7 +6,7 @@ const {v4:uuidv4} = require("uuid")
 const {BrevoClient} = require('@getbrevo/brevo')
 
 function generateToken(id){
-    return jwt.sign({userId: id}, "thisisasecretkey")
+    return jwt.sign({userId: id}, process.env.AUTH_SECRET_KEY)
 }
 
 const validate = async (req,res)=>{
@@ -31,7 +31,7 @@ const validate = async (req,res)=>{
                 return res.status(400).json("Something went wrong")
             }
             if (result){
-                return res.status(200).json({message:"User logged in succesfully", id: id})
+                return res.status(200).json({message:"User logged in succesfully", id: id, token: generateToken(user.id)})
             }else{
                 return res.status(401).json({message:"Password is incorrect"})
             }
