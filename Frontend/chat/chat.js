@@ -12,15 +12,15 @@ const api_url = "http://localhost:3000/message"
 document.getElementById("roomName").addEventListener("keydown", function(e){
     if (e.key=="Enter"){
         e.preventDefault
-
-        const roomName = e.target.value
+        const currEmail = localStorage.getItem("email")
+        const roomName = [currEmail,e.target.value].sort().join("-")
 
         console.log(roomName)
 
         localStorage.setItem("roomName", roomName)
 
         socket.emit("join-room", roomName)
-
+        alert("Room id"+roomName)
         loadMessages()
     }
 })

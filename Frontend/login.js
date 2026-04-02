@@ -18,6 +18,7 @@ function handleFormSubmit(event){
         alert("Logged in successfully")
         localStorage.setItem('token', result.data.token)
         localStorage.setItem("userId",result.data.id)
+        localStorage.setItem("email", result.data.email)
         console.log(result.data.token)
         window.location.href = "./chat/chat.html"
 
