@@ -41,28 +41,6 @@ const addMessage = async(socket, data)=>{
     }
 }
 
-
-// socket.on("sendMessage", async (messageContent)=>{
-//     try {
-//         const newMsg = await Message.create({
-//             userId: socket.user.id,
-//             messageContent
-//         })
-
-//         const data = {
-//             id: newMsg.id,
-//             userId: socket.user.id,
-//             userName: socket.user.name,
-//             messageContent: newMsg.messageContent,
-//             createdAt: newMsg.createdAt
-//         };
-
-//         io.emit("Message", data);
-//     } catch (error) {
-        
-//     }
-// })
-
 const getMessages = async(req,res)=>{
     try {
         // const user = await User.findByPk(userId)
