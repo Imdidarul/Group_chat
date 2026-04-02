@@ -13,12 +13,16 @@ const addMessage = async(socket, data)=>{
         // const {userId, messageContent} = req.body
         const userId = socket.user.id
         const messageContent = data.messageContent
+        const roomId = socket.roomId
+
+        if (!roomId) return
 
         // const user = await User.findByPk(userId)
 
         const newMsg = await Message.create({
             userId,
-            messageContent
+            messageContent,
+            roomId
         })
 
         const messageData = {
@@ -26,10 +30,12 @@ const addMessage = async(socket, data)=>{
                 userId: socket.user.id,
                 userName: socket.user.name,
                 messageContent: newMsg.messageContent,
-                createdAt: newMsg.createdAt
+                createdAt: newMsg.createdAt,
+                roomId
         }
+        ioInstance.to(roomId).emit("Message",messageData)
 
-        ioInstance.emit("Message",messageData)
+        // ioInstance.emit("Message",messageData)
         // broadcast(newMsg)
         // await Message.create({
         //     userId:userId,
@@ -44,7 +50,9 @@ const addMessage = async(socket, data)=>{
 const getMessages = async(req,res)=>{
     try {
         // const user = await User.findByPk(userId)
+        const {roomId} = req.query
         const messages = await Message.findAll({
+            where:{roomId},
             include:[{
                 model:User,
                 attributes:['name']

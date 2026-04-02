@@ -17,6 +17,11 @@ body {
   width: 100%;
 }
 
+
+.join-room {
+  margin: 20px;
+  padding: 10px;
+}
 /* ===== SIDEBAR ===== */
 .sidebar {
   width: 280px;

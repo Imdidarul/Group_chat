@@ -1,6 +1,6 @@
 const {Server} = require("socket.io")
 const socketAuth = require("./middleware")
-const chatHandler = require("./handlers/chat")
+const chatHandler = require("./handlers/personalChat")
 const messageController = require("../controller/messageController")
 module.exports = (server) => {
     const io = new Server(server,{

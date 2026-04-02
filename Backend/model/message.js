@@ -11,6 +11,11 @@ const messages = sequelize.define(
             autoIncrement: true,
             allowNull: false
         },
+        roomId:{
+            type: DataTypes.STRING,
+            allowNull:false,
+
+        },
         userId:{
             type: DataTypes.INTEGER,
             allowNull:false

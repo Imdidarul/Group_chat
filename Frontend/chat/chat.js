@@ -8,8 +8,33 @@ const socket = io("http://localhost:3000",{
 const api_url = "http://localhost:3000/message"
 
 
+
+document.getElementById("roomName").addEventListener("keydown", function(e){
+    if (e.key=="Enter"){
+        e.preventDefault
+
+        const roomName = e.target.value
+
+        console.log(roomName)
+
+        localStorage.setItem("roomName", roomName)
+
+        socket.emit("join-room", roomName)
+
+        loadMessages()
+    }
+})
+
+
+
+
 socket.on("connect",()=>{
     console.log("Connected:",socket.id)
+
+    const roomName = localStorage.getItem("roomName")
+    if (roomName){
+        socket.emit("join-room", roomName)
+    }
 })
 
 socket.on("Message", (msg) => {
@@ -100,7 +125,9 @@ function handleMessageSubmit(event){
 
 async function loadMessages() {
     try {
-        const res = await axios.get("http://localhost:3000/message/getMessages");
+        const roomName = localStorage.getItem("roomName")
+        const res = await axios.get(`http://localhost:3000/message/getMessages?roomId=${roomName}`);
+
 
         console.log(res.data.messages)
         const chatBox = document.querySelector(".chat-box");
