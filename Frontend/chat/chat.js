@@ -11,7 +11,7 @@ const api_url = "http://localhost:3000/message"
 
 document.getElementById("roomName").addEventListener("keydown", function(e){
     if (e.key=="Enter"){
-        e.preventDefault
+        e.preventDefault()
         const currEmail = localStorage.getItem("email")
         const roomName = [currEmail,e.target.value].sort().join("-")
 
@@ -22,9 +22,24 @@ document.getElementById("roomName").addEventListener("keydown", function(e){
         socket.emit("join-room", roomName)
         alert("Room id"+roomName)
         loadMessages()
+        const btn = document.getElementById("exitRoom")
+        btn.disabled = false
     }
 })
 
+document.getElementById("exitRoom").addEventListener("click", function(e){
+    e.preventDefault()
+    const btn = document.getElementById("exitRoom")
+    if (roomName) {
+        socket.emit("leave-room", roomName);
+    }
+    localStorage.removeItem("roomName")
+
+
+    alert("Room exited")
+    btn.disabled = true
+    loadMessages()
+})
 
 
 
