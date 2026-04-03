@@ -31,7 +31,7 @@ const validate = async (req,res)=>{
                 return res.status(400).json("Something went wrong")
             }
             if (result){
-                return res.status(200).json({message:"User logged in succesfully", id: id, token: generateToken(user.id), email: user.email})
+                return res.status(200).json({message:"User logged in succesfully", id: id, token: generateToken(user.id), phone: user.phoneno})
             }else{
                 return res.status(401).json({message:"Password is incorrect"})
             }

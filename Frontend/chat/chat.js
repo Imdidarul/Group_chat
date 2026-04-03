@@ -1,4 +1,7 @@
 // const socket = new WebSocket("ws://localhost:3000")
+
+// const { event } = require("@getbrevo/brevo/dist/cjs/api")
+
 // const {io} = require("socket.io-client")
 const socket = io("http://localhost:3000",{
     auth: {
@@ -7,21 +10,27 @@ const socket = io("http://localhost:3000",{
 })
 const api_url = "http://localhost:3000/message"
 
+document.getElementById("message").addEventListener("keydown", function(e){
+    if (e.key == "Enter"){
+        handleMessageSubmit(e)
+    }
+})
 
 
 document.getElementById("roomName").addEventListener("keydown", function(e){
     if (e.key=="Enter"){
         e.preventDefault()
-        const currEmail = localStorage.getItem("email")
-        const roomName = [currEmail,e.target.value].sort().join("-")
+        const currPhone = localStorage.getItem("phone")
+        const roomName = [currPhone,e.target.value].sort().join("-")
 
-        console.log(roomName)
+        // console.log(roomName)
 
         localStorage.setItem("roomName", roomName)
 
         socket.emit("join-room", roomName)
         alert("Room id"+roomName)
-        loadMessages()
+        // console.log(currPhone)
+        loadMessages(e.target.value)
         const btn = document.getElementById("exitRoom")
         btn.disabled = false
     }
@@ -30,6 +39,7 @@ document.getElementById("roomName").addEventListener("keydown", function(e){
 document.getElementById("exitRoom").addEventListener("click", function(e){
     e.preventDefault()
     const btn = document.getElementById("exitRoom")
+    const roomName = localStorage.getItem("roomName")
     if (roomName) {
         socket.emit("leave-room", roomName);
     }
@@ -38,8 +48,66 @@ document.getElementById("exitRoom").addEventListener("click", function(e){
 
     alert("Room exited")
     btn.disabled = true
-    loadMessages()
+    loadMessages("None")
 })
+
+
+
+function openUploadPopup() {
+    document.getElementById("uploadPopup").style.display = "flex";
+}
+  
+function closeUploadPopup() {
+document.getElementById("uploadPopup").style.display = "none";
+}
+
+
+document.getElementById("uploadForm").addEventListener("submit", async (e)=>{
+    e.preventDefault()
+
+    const fileInput = document.getElementById("fileInput")
+    const file = fileInput.files[0]
+
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+        const res = await axios.post("http://localhost:3000/message/upload",formData)
+
+        const fileUrl = res.data
+
+        let type = "file"
+        if(file.type.startsWith("image/")) type = "image"
+        else if (file.type.startsWith("video/")) type = "video"
+        else if (file.type.startsWith("audio/")) type = "audio"
+
+        socket.emit("sendMessage",{
+            messageContent: fileUrl,
+            type: type
+        })
+        fileInput.value = ""
+        closeUploadPopup()
+
+    }catch(error){
+        console.log("Couldn't be uploaded",error)
+    }
+})
+
+
+function renderContent(msg){
+    if (msg.type === "image"){
+        return `<img src="${msg.messageContent}" width="150" />`
+    } 
+    else if (msg.type === "video") {
+        return `<video src="${msg.messageContent}" controls width="200"></video>`
+    } 
+    else if (msg.type === "audio") {
+        return `<audio src="${msg.messageContent}" controls></audio>`
+    } 
+    else {
+        return `<p>${msg.messageContent}</p>`
+    }
+}
 
 
 
@@ -53,66 +121,39 @@ socket.on("connect",()=>{
 })
 
 socket.on("Message", (msg) => {
-    console.log(socket.id);
+    // console.log(socket.id);
+    const currRoom = localStorage.getItem("roomName") || "broadcast"
+
+    if(msg.roomId !== currRoom) return
 
     const chatBox = document.querySelector(".chat-box")
     const div = document.createElement("div")
 
     const currentUserId = localStorage.getItem("userId")
-
     div.classList.add("msg");
-        if (msg.userId == currentUserId){
-            div.classList.add("right");    
-            div.innerHTML = `
-            <p>${msg.messageContent}</p>
-            <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
-            `;
-        }else{
-            div.classList.add("left")
-            div.innerHTML = `
-            <p style="font-weight: bold">${msg.userName}</p>
-            <p>${msg.messageContent}</p>
-            <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
-            `;
+
+    if (msg.userId == currentUserId){
+        div.classList.add("right");    
+        div.innerHTML = `
+        ${renderContent(msg)}
+        <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
+        `;
+    }else{
+        div.classList.add("left")
+        div.innerHTML = `
+        <p style="font-weight: bold">${msg.userName}</p>
+        ${renderContent(msg)}
+        <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
+        `;
     }
 
     chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight
 
   });
 
-// socket.onmessage = function(event){
-//     const msg = JSON.parse(event.data)
-    
-    // const chatBox = document.querySelector(".chat-box")
-    // const div = document.createElement("div")
-
-    // const currentUserId = localStorage.getItem("userId")
-
-    // div.classList.add("msg");
-    //     if (msg.userId === currentUserId){
-    //         div.classList.add("right");    
-    //         div.innerHTML = `
-    //         <p>${msg.messageContent}</p>
-    //         <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
-    //         `;
-    //     }else{
-    //         div.classList.add("left")
-    //         div.innerHTML = `
-    //         <p style="font-weight: bold">${msg.userName}</p>
-    //         <p>${msg.messageContent}</p>
-    //         <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
-    //         `;
-    // }
-
-    // chatBox.appendChild(div);
-    
-// }
-
 function handleMessageSubmit(event){
     event.preventDefault()
-    userId = localStorage.getItem("userId")
-    // console.log(userId)
-    // alert(userId)
     messageValue = document.getElementById("message").value
 
     const messageContent = {
@@ -122,29 +163,29 @@ function handleMessageSubmit(event){
 
     socket.emit("sendMessage",messageContent)
     document.getElementById("message").value = ""
-    // axios.post(`${api_url}/addMessage`,messageDetails)
-    // .then((res)=>{
-    //     // console.log("Message saved.")
-    //     // event.target.reset()
-    //     document.getElementById("message").value = ""
-    // })
-    // .catch((err)=>{
-    //     console.log(err.message)
-    //     // message.textContent = err.response?.data || "Something went wrong"
-    //     message.classList.add("error")
-    //     // alert(err.response?.data || "something went wrong")
-    // })
 
 }
 
 
-async function loadMessages() {
+async function loadMessages(phone) {
     try {
-        const roomName = localStorage.getItem("roomName")
+        let roomName = localStorage.getItem("roomName")
+        if (!roomName){
+           roomName = "broadcast" 
+           document.querySelector(".chat-header h3").textContent = "Global Chat";
+           document.querySelector(".chat-item.active h4").textContent = "Global"
+        }else{
+            let userPhone = phone
+            // console.log("User phone is:",userPhone)
+            const resName = await axios.get(`http://localhost:3000/message/getName?userPhone=${userPhone}`)
+            document.querySelector(".chat-header h3").textContent = resName.data.name
+            document.querySelector(".chat-item.active h4").textContent = resName.data.name
+        }
+        // alert("Roomname is broadcast")
         const res = await axios.get(`http://localhost:3000/message/getMessages?roomId=${roomName}`);
 
 
-        console.log(res.data.messages)
+        // console.log(res.data.messages)
         const chatBox = document.querySelector(".chat-box");
         chatBox.innerHTML = "";
         const currentUserId = localStorage.getItem("userId")
@@ -159,20 +200,22 @@ async function loadMessages() {
                 // console.log(currentUserId)
                 div.classList.add("right");
                 div.innerHTML = `
-                <p>${msg.messageContent}</p>
+                ${renderContent(msg)}
                 <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
             `;
             }else{
                 div.classList.add("left")
                 div.innerHTML = `
                 <p style="font-weight: bold">${msg.user?.name || "Unknown"}</p>
-                <p>${msg.messageContent}</p>
+                ${renderContent(msg)}
                 <span>${new Date(msg.createdAt).toLocaleTimeString()}</span>
             `;
             }
 
 
             chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight
+            
         });
 
     } catch (err) {
