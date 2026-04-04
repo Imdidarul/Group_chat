@@ -9,7 +9,7 @@ const userRoute = require("./routes/userRoute")
 const messageRoute = require("./routes/messageRoute")
 const server = http.createServer(app)
 const socketIO = require("./socket_io")
-
+const archive = require("./backup")
 
 
 app.use(cors())
@@ -39,8 +39,10 @@ app.use((err, req, res, next) => {
 });
 
 
+
 db.sync({alter: true}).then(()=>{
     server.listen(process.env.PORT || 3000,(err)=>{
+        archive()
         console.log("Server is running")
     })
 }).catch((err)=>{
