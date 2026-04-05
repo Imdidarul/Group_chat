@@ -159,4 +159,53 @@ const upload = async(req,res)=>{
     }
 }
 
-module.exports = {addMessage, getMessages,initSocket, getName, upload}
+
+const getchatName = async(req,res)=>{
+    try {
+        const {phone} = req.query
+        // console.log(phone)
+        const chats = await Message.findAll({
+                attributes:['roomId'],
+                group: ['roomId']
+        })
+
+        const filteredChats = chats.filter(chat =>
+            chat.roomId.includes(phone)
+        )
+        
+        // console.log(chats)
+        // chats.forEach(async (chat)=>{
+        //     console.log(chat.roomId)
+        //     let currChat = [chat.chatId]
+        //     const result = chat.roomId.split("-").find(p => p !== phone)
+        //     const name = await User.findOne({
+        //         where:{phoneno:result}
+        //     })
+        //     currChat.append(name)
+        //     chatName.append(currChat)
+        // })
+
+        const chatName = []
+        for (const chat of filteredChats) {
+            const otherPhone = chat.roomId.split("-").find(p => p !== phone)
+        
+            const user = await User.findOne({
+                where: { phoneno: otherPhone },
+                attributes: ['name', 'phoneno']
+            })
+        
+            chatName.push({
+                roomId: chat.roomId,
+                name: user?.name || "Unknown",
+                phone: otherPhone
+            })
+        }
+
+        console.log(chatName)
+        res.status(200).send(chatName)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+}
+
+module.exports = {addMessage, getMessages,initSocket, getName, upload, getchatName}

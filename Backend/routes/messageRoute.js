@@ -8,4 +8,5 @@ router.post("/addMessage",messageController.addMessage)
 router.get("/getMessages",messageController.getMessages)
 router.get("/getName",messageController.getName)
 router.post("/upload",upload.single("file"),messageController.upload)
+router.get("/chatName",messageController.getchatName)
 module.exports = router

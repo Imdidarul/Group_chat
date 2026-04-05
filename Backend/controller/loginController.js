@@ -53,6 +53,20 @@ const validate = async (req,res)=>{
     }
 }
 
+const permit = async(req,res)=>{
+    try {
+        const userId = req.user.userId
+        const user = await User.findByPk(userId)
+        if(user){
+            res.status(200).send("User found")
+        }else{
+            res.status(404).send("User not found")
+        }
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+}
+
 
 // const forgotPassword = async(req, res)=>{
 //     try {
@@ -138,4 +152,4 @@ const validate = async (req,res)=>{
 
 
 // module.exports = {validate,forgotPassword, updatePassword}
-module.exports = {validate}
+module.exports = {validate, permit}

@@ -1,8 +1,4 @@
-// const socket = new WebSocket("ws://localhost:3000")
 
-// const { event } = require("@getbrevo/brevo/dist/cjs/api")
-
-// const {io} = require("socket.io-client")
 const socket = io("http://localhost:3000",{
     auth: {
         token: localStorage.getItem("token")
@@ -44,11 +40,10 @@ document.getElementById("exitRoom").addEventListener("click", function(e){
         socket.emit("leave-room", roomName);
     }
     localStorage.removeItem("roomName")
-
-
     alert("Room exited")
     btn.disabled = true
     loadMessages("None")
+    chatName()
 })
 
 
@@ -92,6 +87,8 @@ document.getElementById("uploadForm").addEventListener("submit", async (e)=>{
         console.log("Couldn't be uploaded",error)
     }
 })
+
+
 
 
 function renderContent(msg){
@@ -223,7 +220,117 @@ async function loadMessages(phone) {
     }
 }
 
+function checkUser(){
+    const token = localStorage.getItem("token")
+    axios.get("http://localhost:3000/user/permit", {
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
+})
+.then(()=>{
+    console.log("User verified")
+})
+.catch((error)=>{
+    console.log(error)
+
+    alert("User not found")
+
+    localStorage.clear()
+    window.location.href = "../login.html"
+})
+}
+
+async function chatName(){
+    const phone = localStorage.getItem("phone")
+    const res = await axios.get(`http://localhost:3000/message/chatName?phone=${phone}`)
+    const currentRoom = localStorage.getItem("roomName") || "broadcast"
+    
+    const chats = res.data
+
+    const chatList = document.querySelector(".chat-list")
+
+    chatList.innerHTML = ""
+
+    const globalDiv = document.createElement("div")
+    // globalDiv.classList.add("chat-item", "active")
+    globalDiv.classList.add("chat-item")
+    globalDiv.setAttribute("room-id", "broadcast")
+
+    if (currentRoom === "broadcast") {
+        globalDiv.classList.add("active")
+    }
+
+    globalDiv.innerHTML = `
+        <div class="avatar"></div>
+        <div>
+            <h4>Global</h4>
+        </div>
+    `
+    chatList.appendChild(globalDiv)
+
+    globalDiv.addEventListener("click", () => {
+        document.querySelectorAll(".chat-item").forEach(ch=>ch.classList.remove("active"))
+        const btn = document.getElementById("exitRoom")
+    
+        globalDiv.classList.add("active")
+        const roomName = localStorage.getItem("roomName")
+        socket.emit("leave-room",roomName)
+        localStorage.removeItem("roomName")
+        btn.disabled = true
+        chatName()
+        loadMessages("None")
+    })
+
+    chats.forEach(chat=>{
+        if(chat.roomId === "broadcast") return
+
+        const div = document.createElement("div")
+        div.classList.add("chat-item")
+        if (chat.roomId === currentRoom) {
+            div.classList.add("active")
+        }
+
+        div.setAttribute("room-id", chat.roomId)
+
+        div.innerHTML = `
+            <div class="avatar"></div>
+            <div>
+                <h4>${chat.name}</h4>
+            </div>
+        `
+        
+        div.addEventListener("click",()=>{
+            document.querySelectorAll(".chat-item").forEach(ch => ch.classList.remove("active"))
+            const btn = document.getElementById("exitRoom")
+
+            div.classList.add("active")
+
+            const roomId = div.getAttribute("room-id")
+            const prevRoom = localStorage.getItem("roomName")
+            if (prevRoom){
+                socket.emit("leave-room", prevRoom)
+            }
+
+            localStorage.setItem("roomName", roomId)
+
+            socket.emit("join-room", roomId)
+
+            const otherPhone = roomId.split("-").find(p=>p!==phone)
+            btn.disabled = false
+            loadMessages(otherPhone)
+            chatName()
+        })
+
+        chatList.appendChild(div)
+    })
+    
+}
+
+
+
 
 window.addEventListener("DOMContentLoaded",()=>{
+    checkUser()
     loadMessages()
+    chatName()
 })
