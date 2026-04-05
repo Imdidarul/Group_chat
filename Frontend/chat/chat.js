@@ -5,11 +5,27 @@ const socket = io("http://localhost:3000",{
     }
 })
 const api_url = "http://localhost:3000/message"
+let typingTimer
 
 document.getElementById("message").addEventListener("keydown", function(e){
+    const suggestionList = document.querySelector(".suggestions")
     if (e.key == "Enter"){
+        clearTimeout(typingTimer)
         handleMessageSubmit(e)
+        return
     }
+
+    clearTimeout(typingTimer)
+
+    typingTimer = setTimeout(()=>{
+        const text = document.getElementById("message").value
+        if (text.length === 0){
+            suggestionList.innerHTML = ""
+            return
+        }
+        suggestionList.innerHTML = ""
+        aiSuggestion()
+    },500)
 })
 
 
@@ -146,7 +162,7 @@ socket.on("Message", (msg) => {
 
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight
-
+    aiReply()
   });
 
 function handleMessageSubmit(event){
@@ -322,15 +338,78 @@ async function chatName(){
         })
 
         chatList.appendChild(div)
+        aiReply()
     })
     
 }
 
 
+async function aiReply(){
+    try{
+        const roomId = localStorage.getItem("roomName")
+        const response = await axios.get(`http://localhost:3000/message/prevMessage?roomId=${roomId}`)
+        const userId = localStorage.getItem("userId")
+        if (String(response.data.msg_userId) !== userId){
+            console.log("Room id is:",roomId)
+            const suggestionList = document.querySelector(".suggestions")
+            const res = await axios.get(`http://localhost:3000/message/smartReply?messageContent=${response.data.messageContent}`)
+            console.log("This is the suggestion:",res.data)
+            const reply = res.data
+            suggestionList.innerHTML = ""
+            const replySuggest = document.createElement("div")
+            replySuggest.classList.add("suggested-reply")
+            replySuggest.innerHTML = `
+            <p>${reply}</p>
+            `
+            suggestionList.appendChild(replySuggest)
 
+            replySuggest.addEventListener("click",()=>{
+                const input = document.getElementById("message")
+                input.value = reply
+                input.focus()
+                suggestionList.innerHTML = ""
+            })
+        }else{
+            const suggestionList = document.querySelector(".suggestions")
+            suggestionList.innerHTML = ""
+        }
+    }catch(err){
+        console.log(err)
+    }
+}
+
+
+async function aiSuggestion(){
+    const text = document.getElementById("message").value
+    console.log(text)
+
+    const res = await axios.get(`http://localhost:3000/message/suggestion?msg=${text}`)
+
+    console.log(res)
+    const reply = res.data
+    // console.log("THIS IS THE RESPONSE:",res.toJSON())
+    const suggestionList = document.querySelector(".suggestions")
+    suggestionList.innerHTML = ""
+    const replySuggest = document.createElement("div")
+    replySuggest.classList.add("suggested-reply")
+    replySuggest.innerHTML = `
+        <p>${reply}</p>
+        `
+    suggestionList.appendChild(replySuggest)
+
+    replySuggest.addEventListener("click",()=>{
+            const input = document.getElementById("message")
+            input.value = reply
+            input.focus()
+            suggestionList.innerHTML = ""
+    })
+    
+
+}
 
 window.addEventListener("DOMContentLoaded",()=>{
     checkUser()
     loadMessages()
     chatName()
+    aiReply()
 })

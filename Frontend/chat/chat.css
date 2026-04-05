@@ -80,6 +80,11 @@ body {
   box-shadow: 0 0 10px rgba(0, 114, 255, 0.6);
 }
 
+.suggested-reply{
+  background: rgba(0, 114, 255, 0.6);
+  cursor: pointer;
+}
+
 /* Avatar */
 .avatar {
   width: 45px;

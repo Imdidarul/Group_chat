@@ -40,11 +40,12 @@ app.use((err, req, res, next) => {
 
 
 
-db.sync({alter: true}).then(()=>{
+db.sync().then(()=>{
     server.listen(process.env.PORT || 3000,(err)=>{
         archive()
         console.log("Server is running")
     })
 }).catch((err)=>{
+    console.log(err)
     console.log("Unable to connect to server")
 })

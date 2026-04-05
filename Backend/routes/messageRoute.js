@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const messageController = require("../controller/messageController")
+const suggestionController = require("../controller/suggestionController")
 const multer = require("multer")
 const upload = multer({ storage: multer.memoryStorage() })
 
@@ -9,4 +10,7 @@ router.get("/getMessages",messageController.getMessages)
 router.get("/getName",messageController.getName)
 router.post("/upload",upload.single("file"),messageController.upload)
 router.get("/chatName",messageController.getchatName)
+router.get("/smartReply",suggestionController.smartReply)
+router.get("/suggestion",suggestionController.suggestion)
+router.get("/prevMessage",suggestionController.prevMessage)
 module.exports = router

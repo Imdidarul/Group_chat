@@ -59,7 +59,7 @@ const getName = async(req,res) =>{
     try {
         // console.log("Inside getName")
         const {userPhone} = req.query
-        console.log(userPhone)
+        // console.log(userPhone)
         const user = await User.findOne({
             where:{phoneno: userPhone}
         })
@@ -201,7 +201,7 @@ const getchatName = async(req,res)=>{
             })
         }
 
-        console.log(chatName)
+        // console.log(chatName)
         res.status(200).send(chatName)
     } catch (error) {
         res.status(500).json(error)
