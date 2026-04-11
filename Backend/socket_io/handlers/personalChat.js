@@ -18,6 +18,14 @@ module.exports = (socket,io) => {
         console.log(`User ${socket.user.userName} left room ${roomId}`);
     });
 
+    socket.on("send-status",(status,roomId)=>{
+        // console.log("Recieved status")
+        // const {status,roomId} = data
+        // console.log(status)
+        // console.log(status,roomId)
+        messageController.status(socket, status,roomId)
+    })
+
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id)
         // clients = clients.filter(c => c.id !== socket.id)

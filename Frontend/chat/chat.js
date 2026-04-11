@@ -64,6 +64,34 @@ document.getElementById("exitRoom").addEventListener("click", function(e){
 
 
 
+let statusTimer;
+const input = document.getElementById("message")
+input.addEventListener("input",()=>{
+    const roomId = localStorage.getItem("roomName")
+    socket.emit("send-status","typing",roomId)
+    clearTimeout(statusTimer)
+    statusTimer = setTimeout(()=>{
+        socket.emit("send-status","idle",roomId)
+    },500)
+})
+
+socket.on("receive-status",({status,roomId})=>{
+    // console.log(status)
+    const currRoom = localStorage.getItem("roomName")
+    // console.log("Comparing",roomId,currRoom)
+    if (currRoom!==roomId) return
+    const statusDiv = document.querySelector(".status")
+    // const statusNow = document.createElement("div")
+    if (status == "typing"){
+        statusDiv.innerHTML = ` <p class="typing-status">Typing....</p>`
+    }else{
+        statusDiv.innerHTML = ""
+    }
+})
+
+
+
+
 function openUploadPopup() {
     document.getElementById("uploadPopup").style.display = "flex";
 }
@@ -350,7 +378,7 @@ async function aiReply(){
         const response = await axios.get(`http://localhost:3000/message/prevMessage?roomId=${roomId}`)
         const userId = localStorage.getItem("userId")
         if (String(response.data.msg_userId) !== userId){
-            console.log("Room id is:",roomId)
+            // console.log("Room id is:",roomId)
             const suggestionList = document.querySelector(".suggestions")
             const res = await axios.get(`http://localhost:3000/message/smartReply?messageContent=${response.data.messageContent}`)
             console.log("This is the suggestion:",res.data)
@@ -381,7 +409,7 @@ async function aiReply(){
 
 async function aiSuggestion(){
     const text = document.getElementById("message").value
-    console.log(text)
+    // console.log(text)
 
     const res = await axios.get(`http://localhost:3000/message/suggestion?msg=${text}`)
 
