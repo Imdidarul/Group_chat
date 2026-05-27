@@ -91,7 +91,7 @@ Follow these steps to get the project running locally on your machine.
 ###### **1. Clone the Repository**
 
 
-git clone \\\[https://github.com/your-username/groupChat.git](https://github.com/your-username/groupChat.git)
+git clone https://github.com/Imdidarul/Group_chat.git
 cd groupChat
 
 
